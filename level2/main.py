@@ -5,22 +5,19 @@ from sprites import Pacman, Ghost, Coin, Wall
 
 
 
-class PacmanGame(arcade.View):  # [cite: 41]
+class PacmanGame(arcade.View):
     def __init__(self):
-        super().__init__()  # [cite: 47]
+        super().__init__()
 
         self.wall_list = None
         self.coin_list = None
         self.ghost_list = None
         self.player_list = None
-
         self.player = None
         self.game_over = False
         self.background_color = arcade.color.BLACK
         self.start_x = 0
         self.start_y = 0
-
-        # משתנים נדרשים עבור on_draw (עמוד 3)
         self.score = 0
         self.lives = 3
 
@@ -36,7 +33,6 @@ class PacmanGame(arcade.View):  # [cite: 41]
         rows = len(LEVEL_MAP)
         for row_idx, row in enumerate(LEVEL_MAP):
             for col_idx, cell in enumerate(row):
-                # הנוסחה המדויקת מעמוד 3
                 x = col_idx * TILE_SIZE + TILE_SIZE / 2
                 y = (rows - row_idx - 1) * TILE_SIZE + TILE_SIZE / 2
 
@@ -56,12 +52,11 @@ class PacmanGame(arcade.View):  # [cite: 41]
                     self.player = Pacman()
                     self.player.center_x, self.player.center_y = x, y
                     self.player_list.append(self.player)
-                    # עדכון נקודות התחלה (נגזר מהצורך ב-start_x/y ב-__init__)
                     self.start_x = x
                     self.start_y = y
 
     def on_draw(self):
-        self.clear()  # [cite: 72]
+        self.clear()
         self.wall_list.draw()  # 1. קירות
         self.ghost_list.draw()  # 2. רוחות
         self.coin_list.draw()  # 3. מטבעות
