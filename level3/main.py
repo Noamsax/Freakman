@@ -57,10 +57,9 @@ class PacmanGame(arcade.View):
     def on_draw(self):
         self.clear()
 
-        # סדר הציור תוקן: קודם קירות ומטבעות (רקע), ורק אז רוחות ושחקן (דמויות)
         self.wall_list.draw()
-        self.coin_list.draw()  # מצויר לפני הרוחות כדי שיהיה מתחתן
-        self.ghost_list.draw()  # מצויר אחרי המטבעות כדי שיהיה מעליהן
+        self.coin_list.draw()
+        self.ghost_list.draw()
         self.player_list.draw()
 
         arcade.draw_text(f"Score: {self.score}", 10, WINDOW_HEIGHT - 20, arcade.color.WHITE, 14)
@@ -73,68 +72,50 @@ class PacmanGame(arcade.View):
                              arcade.color.WHITE, 20, anchor_x="center")
 
     def on_update(self, delta_time):
-        # 1. בדיקת מצב משחק
         if self.game_over:
             return
 
-        # 2. ניהול תנועת השחקן
-        # שמירת מיקום נוכחי לגיבוי
         start_x = self.player.center_x
         start_y = self.player.center_y
 
-        # עדכון תנועה
         self.player.update()
 
-        # בדיקת התנגשות בקירות
         if arcade.check_for_collision_with_list(self.player, self.wall_list):
-            # שחזור מיקום אם הייתה התנגשות
             self.player.center_x = start_x
             self.player.center_y = start_y
 
-        # 3. ניהול תנועת הרוחות
         for ghost in self.ghost_list:
-            # שמירת מיקום לגיבוי
             ghost_start_x = ghost.center_x
             ghost_start_y = ghost.center_y
 
-            # עדכון תנועה
             ghost.update()
 
-            # בדיקת התנגשות בקירות לרוח
             if arcade.check_for_collision_with_list(ghost, self.wall_list):
-                # שחזור מיקום ובחירת כיוון חדש
                 ghost.center_x = ghost_start_x
                 ghost.center_y = ghost_start_y
                 ghost.change_direction()
 
-        # 4. מנגנון איסוף מטבעות
-        # בדיקת התנגשות במטבעות
         hit_list = arcade.check_for_collision_with_list(self.player, self.coin_list)
         for coin in hit_list:
-            # הוספת ניקוד והסרת המטבע
             self.score += coin.value
             coin.remove_from_sprite_lists()
 
-        # 5. מנגנון פגיעה (התנגשות עם רוח)
         if arcade.check_for_collision_with_list(self.player, self.ghost_list):
-            self.lives -= 1  # הורדת חיים
-            self.player.center_x = self.start_x  # החזרה לנקודת ההתחלה
+            self.lives -= 1
+            self.player.center_x = self.start_x
             self.player.center_y = self.start_y
-            self.player.change_x = 0  # איפוס מהירות
+            self.player.change_x = 0
             self.player.change_y = 0
 
-            # בדיקת הפסד
             if self.lives <= 0:
                 self.game_over = True
 
     def on_key_press(self, key, modifiers):
-        # 1. במצב הפסד - SPACE מאתחל משחק
         if self.game_over:
             if key == arcade.key.SPACE:
                 self.setup()
             return
 
-        # 2. בזמן משחק - שינוי כיוון
         if key == arcade.key.UP:
             self.player.change_y = MOVEMENT_SPEED
         elif key == arcade.key.DOWN:
@@ -145,7 +126,6 @@ class PacmanGame(arcade.View):
             self.player.change_x = MOVEMENT_SPEED
 
     def on_key_release(self, key, modifiers):
-        # איפוס תנועה בעת שחרור מקש
         if key == arcade.key.UP or key == arcade.key.DOWN:
             self.player.change_y = 0
         elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
