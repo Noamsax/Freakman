@@ -70,7 +70,7 @@ class PacmanGame(arcade.View):
 
 
 def main():
-    window = arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
+    window = arcade.W indow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
     game_view = PacmanGame()
     game_view.setup()
     window.show_view(game_view)

@@ -71,68 +71,50 @@ class PacmanGame(arcade.View):
                              arcade.color.WHITE, 20, anchor_x="center")
 
     def on_update(self, delta_time):
-        # 1. בדיקת מצב משחק
         if self.game_over:
             return
 
-        # 2. ניהול תנועת השחקן
-        # שמירת מיקום נוכחי לגיבוי [cite: 18]
         start_x = self.player.center_x
         start_y = self.player.center_y
 
-        # עדכון תנועה
         self.player.update()
 
-        # בדיקת התנגשות בקירות [cite: 19]
         if arcade.check_for_collision_with_list(self.player, self.wall_list):
-            # שחזור מיקום אם הייתה התנגשות [cite: 20]
             self.player.center_x = start_x
             self.player.center_y = start_y
 
-        # 3. ניהול תנועת הרוחות
         for ghost in self.ghost_list:
-            # שמירת מיקום לגיבוי [cite: 22]
             ghost_start_x = ghost.center_x
             ghost_start_y = ghost.center_y
 
-            # עדכון תנועה
             ghost.update()
 
-            # בדיקת התנגשות בקירות לרוח [cite: 30]
             if arcade.check_for_collision_with_list(ghost, self.wall_list):
-                # שחזור מיקום ובחירת כיוון חדש
                 ghost.center_x = ghost_start_x
                 ghost.center_y = ghost_start_y
                 ghost.change_direction()
 
-        # 4. מנגנון איסוף מטבעות
-        # בדיקת התנגשות במטבעות [cite: 33]
         hit_list = arcade.check_for_collision_with_list(self.player, self.coin_list)
         for coin in hit_list:
-            # הוספת ניקוד והסרת המטבע [cite: 34]
             self.score += coin.value
             coin.remove_from_sprite_lists()
 
-        # 5. מנגנון פגיעה (התנגשות עם רוח) [cite: 35]
         if arcade.check_for_collision_with_list(self.player, self.ghost_list):
-            self.lives -= 1  # הורדת חיים [cite: 39]
+            self.lives -= 1
             self.player.center_x = self.start_x  # החזרה לנקודת ההתחלה [cite: 40]
             self.player.center_y = self.start_y
-            self.player.change_x = 0  # איפוס מהירות [cite: 41]
+            self.player.change_x = 0
             self.player.change_y = 0
 
-            # בדיקת הפסד [cite: 42]
             if self.lives <= 0:
                 self.game_over = True
 
     def on_key_press(self, key, modifiers):
-        # 1. במצב הפסד - SPACE מאתחל משחק [cite: 46]
         if self.game_over:
             if key == arcade.key.SPACE:
                 self.setup()
             return
 
-        # 2. בזמן משחק - שינוי כיוון [cite: 47-48]
         if key == arcade.key.UP:
             self.player.change_y = MOVEMENT_SPEED
         elif key == arcade.key.DOWN:
@@ -143,7 +125,6 @@ class PacmanGame(arcade.View):
             self.player.change_x = MOVEMENT_SPEED
 
     def on_key_release(self, key, modifiers):
-        # איפוס תנועה בעת שחרור מקש [cite: 51]
         if key == arcade.key.UP or key == arcade.key.DOWN:
             self.player.change_y = 0
         elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
