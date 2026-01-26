@@ -1,4 +1,3 @@
-# main.py
 import arcade
 from constants import *
 from sprites import Pacman, Ghost, Coin, Wall
