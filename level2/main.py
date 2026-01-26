@@ -28,7 +28,7 @@ class PacmanGame(arcade.View):
         self.player_list = arcade.SpriteList()
 
         self.game_over = False
-        self.score = 0  # איפוס ניקוד להתחלה
+        self.score = 0
 
         rows = len(LEVEL_MAP)
         for row_idx, row in enumerate(LEVEL_MAP):
@@ -57,10 +57,10 @@ class PacmanGame(arcade.View):
 
     def on_draw(self):
         self.clear()
-        self.wall_list.draw()  # 1. קירות
-        self.ghost_list.draw()  # 2. רוחות
-        self.coin_list.draw()  # 3. מטבעות
-        self.player_list.draw()  # 4. שחקן
+        self.wall_list.draw()
+        self.ghost_list.draw()
+        self.coin_list.draw()
+        self.player_list.draw()
 
         arcade.draw_text(f"Score: {self.score}", 10, WINDOW_HEIGHT - 20, arcade.color.WHITE, 14)
         arcade.draw_text(f"Lives: {self.lives}", 10, WINDOW_HEIGHT - 40, arcade.color.WHITE, 14)
