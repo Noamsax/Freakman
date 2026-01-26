@@ -116,14 +116,34 @@ class PacmanGame(arcade.View):
                 self.setup()
             return
 
+        CORRECTION = 12
+
+        nearest_x = round((self.player.center_x - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
+        nearest_y = round((self.player.center_y - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
+
         if key == arcade.key.UP:
-            self.player.change_y = MOVEMENT_SPEED
+            if abs(self.player.center_x - nearest_x) <= CORRECTION:
+                self.player.center_x = nearest_x  # יישור
+                self.player.change_x = 0
+                self.player.change_y = MOVEMENT_SPEED
+
         elif key == arcade.key.DOWN:
-            self.player.change_y = -MOVEMENT_SPEED
+            if abs(self.player.center_x - nearest_x) <= CORRECTION:
+                self.player.center_x = nearest_x
+                self.player.change_x = 0
+                self.player.change_y = -MOVEMENT_SPEED
+
         elif key == arcade.key.LEFT:
-            self.player.change_x = -MOVEMENT_SPEED
+            if abs(self.player.center_y - nearest_y) <= CORRECTION:
+                self.player.center_y = nearest_y
+                self.player.change_y = 0
+                self.player.change_x = -MOVEMENT_SPEED
+
         elif key == arcade.key.RIGHT:
-            self.player.change_x = MOVEMENT_SPEED
+            if abs(self.player.center_y - nearest_y) <= CORRECTION:
+                self.player.center_y = nearest_y
+                self.player.change_y = 0
+                self.player.change_x = MOVEMENT_SPEED
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.DOWN:

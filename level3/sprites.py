@@ -5,7 +5,7 @@ from constants import TILE_SIZE, MOVEMENT_SPEED
 class Pacman(arcade.Sprite):
     def __init__(self):
         super().__init__()
-        self.texture = arcade.make_circle_texture(int(TILE_SIZE * 0.7), arcade.color.YELLOW)
+        self.texture = arcade.make_circle_texture(int(TILE_SIZE * 0.8), arcade.color.YELLOW)
         self.width = self.texture.width
         self.height = self.texture.height
 
