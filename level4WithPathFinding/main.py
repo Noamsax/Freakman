@@ -4,6 +4,45 @@ from sprites import Pacman, Ghost, Coin, Wall
 from pathfinding import Pathfinder
 
 
+# --- מחלקה חדשה: מסך סיום / ניצחון ---
+class GameOverView(arcade.View):
+    def __init__(self, score, status):
+        super().__init__()
+        self.score = score
+        self.status = status  # יכול להיות "WIN" או "LOSE"
+
+    def on_draw(self):
+        self.clear()
+
+        # בחירת צבע וטקסט לפי התוצאה
+        if self.status == "WIN":
+            title_text = "VICTORY!"
+            color = arcade.color.GREEN
+        else:
+            title_text = "GAME OVER"
+            color = arcade.color.RED
+
+        # ציור הכותרת
+        arcade.draw_text(title_text, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 50,
+                         color, 54, anchor_x="center")
+
+        # ציור הניקוד
+        arcade.draw_text(f"Final Score: {self.score}", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2,
+                         arcade.color.WHITE, 24, anchor_x="center")
+
+        # הוראות לאתחול
+        arcade.draw_text("Press ENTER to Restart", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 60,
+                         arcade.color.GRAY, 18, anchor_x="center")
+
+    def on_key_press(self, key, modifiers):
+        # אם לוחצים אנטר, מתחילים משחק חדש
+        if key == arcade.key.ENTER:
+            game_view = PacmanGame()
+            game_view.setup()
+            self.window.show_view(game_view)
+
+
+# --- המשחק עצמו ---
 class PacmanGame(arcade.View):
     def __init__(self):
         super().__init__()
@@ -14,7 +53,6 @@ class PacmanGame(arcade.View):
         self.player_list = None
         self.player = None
         self.pathfinder = None
-        self.game_over = False
         self.score = 0
         self.lives = 3
 
@@ -24,13 +62,11 @@ class PacmanGame(arcade.View):
         self.ghost_list = arcade.SpriteList()
         self.player_list = arcade.SpriteList()
 
-        self.game_over = False
         self.score = 0
         self.lives = 3
 
         self.pathfinder = Pathfinder(LEVEL_MAP)
 
-        # משתנה שסופר כמה רוחות יצרנו כדי לתת להן ID שונה
         ghost_counter = 0
 
         rows = len(LEVEL_MAP)
@@ -48,11 +84,10 @@ class PacmanGame(arcade.View):
                     coin.center_x, coin.center_y = x, y
                     self.coin_list.append(coin)
                 elif cell == "G":
-                    # יצירת רוח עם ID ייחודי
                     ghost = Ghost(ghost_counter)
                     ghost.center_x, ghost.center_y = x, y
                     self.ghost_list.append(ghost)
-                    ghost_counter += 1  # קידום המספר לרוח הבאה
+                    ghost_counter += 1
                 elif cell == "P":
                     self.player = Pacman()
                     self.player.center_x, self.player.center_y = x, y
@@ -70,16 +105,9 @@ class PacmanGame(arcade.View):
         arcade.draw_text(f"Score: {self.score}", 10, WINDOW_HEIGHT - 20, arcade.color.WHITE, 14)
         arcade.draw_text(f"Lives: {self.lives}", 10, WINDOW_HEIGHT - 40, arcade.color.WHITE, 14)
 
-        if self.game_over:
-            arcade.draw_text("GAME OVER", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2,
-                             arcade.color.RED, 50, anchor_x="center")
-            arcade.draw_text("Press SPACE to Restart", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 50,
-                             arcade.color.WHITE, 20, anchor_x="center")
-
     def on_update(self, delta_time):
-        if self.game_over:
-            return
 
+        # 1. תנועת שחקן
         start_x = self.player.center_x
         start_y = self.player.center_y
         self.player.update()
@@ -88,6 +116,7 @@ class PacmanGame(arcade.View):
             self.player.center_x = start_x
             self.player.center_y = start_y
 
+        # 2. תנועת רוחות
         for ghost in self.ghost_list:
             ghost_start_x = ghost.center_x
             ghost_start_y = ghost.center_y
@@ -98,16 +127,21 @@ class PacmanGame(arcade.View):
             if arcade.check_for_collision_with_list(ghost, self.wall_list):
                 ghost.center_x = ghost_start_x
                 ghost.center_y = ghost_start_y
-
-                # אם רוח נתקעת בקיר, היא תמיד משנה כיוון (גם החכמה וגם הטיפשה)
-                # כדי שלא יתקעו לנצח
                 ghost.change_direction()
 
+        # 3. איסוף מטבעות
         hit_list = arcade.check_for_collision_with_list(self.player, self.coin_list)
         for coin in hit_list:
             self.score += coin.value
             coin.remove_from_sprite_lists()
 
+        # --- בדיקת ניצחון: האם נגמרו המטבעות? ---
+        if len(self.coin_list) == 0:
+            # מעבר למסך ניצחון
+            view = GameOverView(self.score, "WIN")
+            self.window.show_view(view)
+
+        # 4. התנגשות ברוחות
         if arcade.check_for_collision_with_list(self.player, self.ghost_list):
             self.lives -= 1
             self.player.center_x = self.start_x
@@ -115,15 +149,13 @@ class PacmanGame(arcade.View):
             self.player.change_x = 0
             self.player.change_y = 0
 
+            # --- בדיקת הפסד ---
             if self.lives <= 0:
-                self.game_over = True
+                # מעבר למסך הפסד
+                view = GameOverView(self.score, "LOSE")
+                self.window.show_view(view)
 
     def on_key_press(self, key, modifiers):
-        if self.game_over:
-            if key == arcade.key.SPACE:
-                self.setup()
-            return
-
         CORRECTION = 12
         nearest_x = round((self.player.center_x - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
         nearest_y = round((self.player.center_y - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2
